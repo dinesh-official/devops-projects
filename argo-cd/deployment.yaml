@@ -1,40 +1,54 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-    name: project
-
+# argo-cd-single-test.yaml
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mydeploy
-  namespace: project
+  name: guestbook
+  namespace: default
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
-      app: myapp
+      app: guestbook
   template:
     metadata:
       labels:
-        app: myapp
+        app: guestbook
     spec:
       containers:
-      - name: jenkinscontainer
-        image: senthilkumar03/jenkinrepo:75
+      - name: guestbook
+        image: nginx:latest
         ports:
-        - containerPort: 8080
-
+        - containerPort: 80
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: myservice
-  namespace: project
+  name: guestbook
+  namespace: default
 spec:
   selector:
-    app: myapp
-  type: LoadBalancer
+    app: guestbook
   ports:
-  - port: 80
-    targetPort: 8080
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: guestbook-app
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: 'https://github.com/dinesh-official/devops-projects.git'
+    targetRevision: main
+    path: guestbook
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
