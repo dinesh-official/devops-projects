@@ -1,54 +1,20 @@
-# argo-cd-test-full.yaml
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: guestbook
-  namespace: default
+  name: nginx-deployment
+  namespace: argocd-demo
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
-      app: guestbook
+      app: nginx
   template:
     metadata:
       labels:
-        app: guestbook
+        app: nginx
     spec:
       containers:
-        - name: guestbook
-          image: nginx:latest
-          ports:
-            - containerPort: 80
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: guestbook
-  namespace: default
-spec:
-  selector:
-    app: guestbook
-  ports:
-    - protocol: TCP
-      port: 80
-      targetPort: 80
----
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: guestbook-app
-  namespace: argocd   # Make sure Argo CD is installed in this namespace
-spec:
-  project: default
-  source:
-    repoURL: 'https://github.com/argoproj/argo-helm.git'  # public repo for testing
-    path: charts/argo-cd
-    targetRevision: HEAD
-  destination:
-    server: 'https://kubernetes.default.svc'
-    namespace: default
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
